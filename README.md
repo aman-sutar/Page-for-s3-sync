@@ -62,54 +62,29 @@ This project includes a GitHub Actions workflow that automatically syncs the `in
 #### Workflow File: `.github/workflows/mail.yml`
 
 ```yaml
-name: 🚀 Deploy to S3
+name: Deploy To S3
 
 on:
   push:
     branches:
-      - main
-    paths:
-      - 'index.html'
-      - '.github/workflows/deploy.yml'
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deployment environment'
-        required: false
-        default: 'production'
-
-env:
-  AWS_REGION: ${{ secrets.AWS_REGION }}
+    - main
 
 jobs:
-  deploy:
-    name:  Deploy to S3
+  build-and-deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      - name:  Checkout Repository
-        uses: actions/checkout@v4
+    - name: checkout
+      uses: actions/checkout@v1
 
-      - name:  Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ env.AWS_REGION }}
-
-      - name:  Upload to S3
-        run: |
-          echo " Deploying to S3..."
-          aws s3 cp index.html s3://${{ secrets.S3_BUCKET_NAME }}/index.html \
-           
-          echo " Deployment complete!"
-
-      - name: 🌐 Output Website URL
-        run: |
-          echo "=========================================="
-          echo " Deployment Successful!"
-          echo " Website URL: https://git-26-09-2025.s3.us-east-1.amazonaws.com/index.html"
-          echo "=========================================="
+    - name: AWS CredConfig
+      uses: aws-actions/Configure-aws-credentials@v1
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+        aws-region: us-east-1
+        
+    - name: Deploy Static Test Page to S3
+      run: aws s3 sync . s3://git-26-09-2025 --delete
 ```
 
 ---
